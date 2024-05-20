@@ -38,7 +38,6 @@ function BadgerLoginScreen(props) {
             setErrorMsg(json.msg);
             const userInfo = json.user;
             SecureStore.setItemAsync("userInfo", JSON.stringify(userInfo));
-            navigate("/");
         }).catch(err => {
             setErrorMsg(err.message);
         }).finally(() => {
