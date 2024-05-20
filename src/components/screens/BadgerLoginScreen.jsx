@@ -53,7 +53,6 @@ function BadgerLoginScreen(props) {
         <TextInput style={styles.input} textContentType={"password"} secureTextEntry={true} ref={passwordInput} />
         <View style={{ height: 8 }} />
         <Button color="crimson" title="Login" onPress={() => {
-            Alert.alert("Hmmm...", "I should check the user's credentials first!");
             props.handleLogin("myusername", "mypassword")
         }} />
         {
