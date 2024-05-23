@@ -7,7 +7,7 @@ import BadgerChatroomScreen from './screens/BadgerChatroomScreen';
 import BadgerRegisterScreen from './screens/BadgerRegisterScreen';
 import BadgerLoginScreen from './screens/BadgerLoginScreen';
 import BadgerLandingScreen from './screens/BadgerLandingScreen';
-
+import CS571 from '@cs571/mobile-client';
 
 const ChatDrawer = createDrawerNavigator();
 
@@ -18,18 +18,73 @@ export default function App() {
   const [chatrooms, setChatrooms] = useState([]);
 
   useEffect(() => {
-    // hmm... maybe I should load the chatroom names here
-    setChatrooms(["Hello", "World"]) // for example purposes only!
+    fetch("https://cs571.org/api/f23/hw9/chatrooms", {
+      method: 'GET',
+      headers: {
+        "X-CS571-ID": CS571.getBadgerId(),
+      },
+    }).then(async res => {
+      const json = await res.json();
+      if (res.status === 200) {
+        return json;
+      } else {
+        throw new Error(json.msg);
+      }
+    }).then(json => {
+      setChatrooms(json);
+    });
   }, []);
 
-  function handleLogin(username, password) {
-    // hmm... maybe this is helpful!
-    setIsLoggedIn(true); // I should really do a fetch to login first!
+  async function handleLogin(username, password) {
+    return fetch("https://cs571.org/api/f23/hw9/login", {
+      method: 'POST',
+      headers: {
+        "X-CS571-ID": CS571.getBadgerId(),
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        "username": username,
+        "password": password,
+      }),
+      credentials: "include"
+    }).then(async res => {
+      const json = await res.json();
+      if (res.status === 200) {
+        return json;
+      } else {
+        throw new Error(json.msg);
+      }
+    }).then(json => {
+      const userInfo = json.user;
+      SecureStore.setItemAsync("userInfo", JSON.stringify(userInfo));
+      setIsLoggedIn(true);
+    }); // I should really do a fetch to login first!
   }
 
-  function handleSignup(username, password) {
-    // hmm... maybe this is helpful!
-    setIsLoggedIn(true); // I should really do a fetch to register first!
+  async function handleSignup(username, password) {
+    return fetch("https://cs571.org/api/f23/hw9/register", {
+      method: 'POST',
+      headers: {
+        "X-CS571-ID": CS571.getBadgerId(),
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        "username": username,
+        "password": password,
+      }),
+      credentials: "include"
+    }).then(async res => {
+      const json = await res.json();
+      if (res.status === 200) {
+        return json;
+      } else {
+        throw new Error(json.msg);
+      }
+    }).then(json => {
+      const userInfo = json.user;
+      SecureStore.setItemAsync("userInfo", JSON.stringify(userInfo));
+      setIsLoggedIn(true); // I should really do a fetch to register first!
+    });
   }
 
   if (isLoggedIn) {
