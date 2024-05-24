@@ -1,12 +1,13 @@
+import { useNavigation } from "@react-navigation/native";
 import { Alert, Button, StyleSheet, Text, View } from "react-native";
 
 function BadgerLogoutScreen(props) {
 
     return <View style={styles.container}>
-        <Text style={{fontSize: 24, marginTop: -100}}>Are you sure you're done?</Text>
+        <Text style={{ fontSize: 24, marginTop: -100 }}>Are you sure you're done?</Text>
         <Text>Come back soon!</Text>
-        <Text/>
-        <Button title="Logout" color="darkred" onPress={() => Alert.alert("Hmmm...", "This should do something!")}/>
+        <Text />
+        <Button title="Logout" color="darkred" onPress={props.logout} />
 
     </View>
 }

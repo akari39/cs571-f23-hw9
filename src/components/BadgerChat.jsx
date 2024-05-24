@@ -7,17 +7,21 @@ import BadgerChatroomScreen from './screens/BadgerChatroomScreen';
 import BadgerRegisterScreen from './screens/BadgerRegisterScreen';
 import BadgerLoginScreen from './screens/BadgerLoginScreen';
 import BadgerLandingScreen from './screens/BadgerLandingScreen';
+import BadgerLogoutScreen from './screens/BadgerLogoutScreen';
 import CS571 from '@cs571/mobile-client';
+import BadgerConversionScreen from './screens/BadgerConversionScreen';
 
 const ChatDrawer = createDrawerNavigator();
 
 export default function App() {
 
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
+  const [isGuestVisiting, setIsGuestVisiting] = useState(false);
   const [chatrooms, setChatrooms] = useState([]);
 
   useEffect(() => {
+    checkLoginStatus();
     fetch("https://cs571.org/api/f23/hw9/chatrooms", {
       method: 'GET',
       headers: {
@@ -32,8 +36,18 @@ export default function App() {
       }
     }).then(json => {
       setChatrooms(json);
+    }).catch(err => {
+      alert(err);
     });
   }, []);
+
+  async function checkLoginStatus() {
+    const userInfo = await SecureStore.getItemAsync("userInfo");
+    if (userInfo !== undefined && userInfo !== null && userInfo.length > 0 && userInfo !== "{}") {
+      setIsLoggedIn(true);
+    }
+  }
+
 
   async function handleLogin(username, password) {
     return fetch("https://cs571.org/api/f23/hw9/login", {
@@ -45,8 +59,7 @@ export default function App() {
       body: JSON.stringify({
         "username": username,
         "password": password,
-      }),
-      credentials: "include"
+      })
     }).then(async res => {
       const json = await res.json();
       if (res.status === 200) {
@@ -55,8 +68,7 @@ export default function App() {
         throw new Error(json.msg);
       }
     }).then(json => {
-      const userInfo = json.user;
-      SecureStore.setItemAsync("userInfo", JSON.stringify(userInfo));
+      SecureStore.setItemAsync("userInfo", JSON.stringify(json));
       setIsLoggedIn(true);
     }); // I should really do a fetch to login first!
   }
@@ -71,8 +83,7 @@ export default function App() {
       body: JSON.stringify({
         "username": username,
         "password": password,
-      }),
-      credentials: "include"
+      })
     }).then(async res => {
       const json = await res.json();
       if (res.status === 200) {
@@ -81,13 +92,26 @@ export default function App() {
         throw new Error(json.msg);
       }
     }).then(json => {
-      const userInfo = json.user;
-      SecureStore.setItemAsync("userInfo", JSON.stringify(userInfo));
+      SecureStore.setItemAsync("userInfo", JSON.stringify(json));
       setIsLoggedIn(true); // I should really do a fetch to register first!
     });
   }
 
-  if (isLoggedIn) {
+  function guestVisit() {
+    setIsGuestVisiting(true);
+  }
+
+  function goToSignUp() {
+    setIsGuestVisiting(false);
+    setIsRegistering(true);
+  }
+
+  function logout() {
+    SecureStore.deleteItemAsync("userInfo");
+    setIsLoggedIn(false);
+  }
+
+  if (isLoggedIn || isGuestVisiting) {
     return (
       <NavigationContainer>
         <ChatDrawer.Navigator>
@@ -99,12 +123,21 @@ export default function App() {
               </ChatDrawer.Screen>
             })
           }
+          {
+            !isGuestVisiting ? <ChatDrawer.Screen name="Logout" component={(props) => <BadgerLogoutScreen logout={logout} />} options={{
+              drawerActiveBackgroundColor: "rgba(255, 0, 0, 0.2)",
+              drawerLabelStyle: { color: "red" }
+            }} /> : <ChatDrawer.Screen name="Signup" component={(props) => <BadgerConversionScreen goToSignUp={goToSignUp} />} options={{
+              drawerActiveBackgroundColor: "rgba(255, 0, 0, 0.2)",
+              drawerLabelStyle: { color: "red" }
+            }} />
+          }
         </ChatDrawer.Navigator>
       </NavigationContainer>
     );
   } else if (isRegistering) {
     return <BadgerRegisterScreen handleSignup={handleSignup} setIsRegistering={setIsRegistering} />
   } else {
-    return <BadgerLoginScreen handleLogin={handleLogin} setIsRegistering={setIsRegistering} />
+    return <BadgerLoginScreen handleLogin={handleLogin} setIsRegistering={setIsRegistering} guestVisit={guestVisit} />
   }
 }

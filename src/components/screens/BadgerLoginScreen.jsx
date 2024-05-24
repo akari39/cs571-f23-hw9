@@ -32,7 +32,11 @@ function BadgerLoginScreen(props) {
             errorMsg.length > 0 ? <Text style={{ padding: 16, color: "red" }}>{errorMsg}</Text> : <></>
         }
         <Text style={{ padding: 16 }}>New here?</Text>
-        <Button color="grey" title="Signup" onPress={() => props.setIsRegistering(true)} />
+        <View style={{ flexDirection: "row" }}>
+            <Button color="grey" title="Signup" onPress={() => props.setIsRegistering(true)} />
+            <View style={{ width: 8 }} />
+            <Button color="grey" title="CONTINUE AS GUEST" onPress={props.guestVisit} />
+        </View>
     </View>;
 }
 
